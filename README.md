@@ -1,5 +1,18 @@
 ## Curso programação Orientada a Objetos - School of Net
 
+### Atividade 3 - Refatoração
+
+```
+    - Refatore as classes utilizadas de seu projeto para que as mesmas trabalhem com namespaces.
+    
+    - Verifique se dentro de seu projeto há a necessidade de se trabalhar com classes abstratas.
+    
+    - Não se esqueça de criar a estrutura de diretórios, nome de arquivos e classes seguindo a PSR-0 (www.php-fig.org).
+    
+    - Faça a implementação do autoload para que você não precise mais trabalhar com require/include para a chamada de suas classes.
+    
+    - Deixe todo o fonte de sua aplicação no mesmo nível que o DocumentRoot do servidor web. Deixe a pasta que está visível para web (seu DocumentRoot) apenas com o index.php e os demais assets(css, javascript e imagens).
+```
 
 ### Atividade 2 - Tipos de clientes
    ```` 
@@ -14,7 +27,7 @@
   -  Você também terá a opção de criar clientes que utilizarão endereço específico de cobrança, nesse caso, crie uma interface para que esses tipos de clientes possam implementar.
 ````
 
-###Atividade 1 - Cadastro de clientes
+### Atividade 1 - Cadastro de clientes
 ````
 - Crie uma classe com os principais atributos que um cliente deve ter, como nome, cpf, endereço, etc.
 
