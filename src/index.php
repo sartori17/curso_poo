@@ -5,14 +5,13 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
         integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
         crossorigin="anonymous"></script>
+
 <div class="container-fluid">
     <h2>Listagem de Clientes</h2>
-
-
     <?php
 
     define('CLASS_DIR', 'curso_poo.dev/');
-    set_include_path (get_include_path().PATH_SEPARATOR.CLASS_DIR);
+    set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
     spl_autoload_register();
 
     /**
@@ -22,46 +21,18 @@
      * Time: 22:05
      */
 
-    $id = array(1, 50, 62, 93, 68, 37, 102, 392, 205, 10);
+    $config = include "POO/db/config.php";
 
-    foreach ($id as $key => $x) {
-        $id = $x;
-        $nome = "Cliente" . $x;
-        $email = "cliente_" . $x . "@site.com.br";
-
-        if ($x % 2 === 0) {
-            $cpf = str_pad($x, 11, STR_PAD_LEFT);
-            $cidade = "Santos";
-            $cliente = new POO\Cliente\Type\ClienteFisica;
-            $clientes[$x] = $cliente->setId($id)
-                ->setNome($nome)
-                ->setCPF($cpf)
-                ->setEmail($email)
-                ->setCidade($cidade)
-                ->setGrauImportancia($x % 5)
-                ->setEndereco("Rua Code Education, {$x}");
-        } else {
-            $cnpj = str_pad($x, 14, STR_PAD_LEFT);
-            $cidade = "São Vicente";
-            $cliente = new POO\Cliente\Type\ClienteJuridico;
-            $clientes[$x] = $cliente->setId($id)
-                ->setNome($nome)
-                ->setCNPJ($cnpj)
-                ->setEmail($email)
-                ->setCidade($cidade)
-                ->setGrauImportancia($x % 5)
-                ->setEndereco("Rua Code Education, {$x}");
-        }
-
+    if (!isset($config['db'])) {
+        throw new \InvalidArgumentException("Configuração não existe");
     }
 
-    if (isset ($_GET['ordem'])) {
-        if ($_GET['ordem'] == 1) {
-            ksort($clientes);
-        } elseif ($_GET['ordem'] == 2) {
-            krsort($clientes);
-        }
-    }
+    $host = (isset($config['db']['host'])) ? $config['db']['host'] : null;
+    $dbname = (isset($config['db']['dbname'])) ? $config['db']['dbname'] : null;
+    $user = (isset($config['db']['user'])) ? $config['db']['user'] : null;
+    $password = (isset($config['db']['password'])) ? $config['db']['password'] : null;
+
+    $conn2 = $conn = new \PDO("mysql:host={$host};dbname={$dbname}", $user, $password);
 
     echo "<a class='btn btn-sm btn-default' href='index.php?ordem=1'>ordem crescente</a>";
 
@@ -69,6 +40,25 @@
     if (isset($_GET['busca'])) {
         echo "<a class='btn btn-sm btn-primary' href='index.php'>exibir todos</a><br>";
     }
+
+    if (isset ($_GET['ordem'])) {
+        if ($_GET['ordem'] == 1) {
+            $order = " order by idcliente asc";
+        } elseif ($_GET['ordem'] == 2) {
+            $order = " order by idcliente desc";
+        }
+    }
+
+    $where = "";
+    if (isset($_GET['busca'])) {
+        $where = " WHERE idcliente = {$_GET['busca']}";
+    }
+
+    $query = "select * from cliente $where $order";
+
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+    $busca = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo "<br><br><table class='table table-hover'>";
     echo "<tr>
@@ -82,28 +72,48 @@
             <td>Grau de Importancia</td>
             <td>Opções</td>
             </tr>";
-    foreach ($clientes as $key => $cliente) {
-        $show = false;
-        if (isset($_GET['busca'])) {
-            if ($_GET['busca'] == $key) {
-                $show = true;
-            }
-        } else {
-            $show = true;
+
+    foreach ($busca as $dados) {
+        $id = $dados['idcliente'];
+        $nome = $dados['nome'];
+        $email = $dados['email'];
+        $cidade = $dados['cidade'];
+        $endereco = $dados['endereco'];
+        $registro = $dados['registro'];
+        $grauImportancia = $dados['grauimportancia'];
+        $tipo = $dados['tipo'];
+        if ($tipo === 'F') {
+            $cliente = new POO\Cliente\Type\ClienteFisica($conn2);
+            $clientes[] = $cliente->setId($id)
+                ->setNome($nome)
+                ->setCPF($registro)
+                ->setEmail($email)
+                ->setCidade($cidade)
+                ->setGrauImportancia($grauImportancia)
+                ->setEndereco($endereco);
+        } elseif ($tipo === 'J') {
+            $cnpj = $cnpj;
+            $cliente = new POO\Cliente\Type\ClienteJuridico($conn2);
+            $clientes[] = $cliente->setId($id)
+                ->setNome($nome)
+                ->setCNPJ($registro)
+                ->setEmail($email)
+                ->setCidade($cidade)
+                ->setGrauImportancia($grauImportancia)
+                ->setEndereco($endereco);
         }
 
-        if ($show) {
-            echo "<tr ><td>{$cliente -> getId()}</td>";
-            echo "<td>{$cliente->getNome()}</td>";
-            echo "<td>{$cliente->getNumeroIndetificacao()}</td>";
-            echo "<td>{$cliente->getEmail()}</td>";
-            echo "<td>{$cliente->getEndereco()}</td>";
-            echo "<td>{$cliente->getCidade()}</td>";
-            echo "<td>{$cliente->getTipo()}</td>";
-            echo "<td>{$cliente->getGrauImportancia()}</td>";
-            echo "<td><a class='btn btn-mini btn-primary' href='index.php?busca={$key}'>exibir</a></td>";
-            echo "</tr>";
-        }
+        echo "<tr ><td>{$cliente -> getId()}</td>";
+        echo "<td>{$cliente->getNome()}</td>";
+        echo "<td>{$cliente->getNumeroIndetificacao()}</td>";
+        echo "<td>{$cliente->getEmail()}</td>";
+        echo "<td>{$cliente->getEndereco()}</td>";
+        echo "<td>{$cliente->getCidade()}</td>";
+        echo "<td>{$cliente->getTipo()}</td>";
+        echo "<td>{$cliente->getGrauImportancia()}</td>";
+        echo "<td><a class='btn btn-mini btn-primary' href='index.php?busca={$cliente->getId()}'>exibir</a></td>";
+        echo "</tr>";
+
     }
     echo "</table>";
     ?>

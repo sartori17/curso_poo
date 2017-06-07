@@ -8,8 +8,8 @@
 
 return array(
     'db' => array (
-        'host' => 'localhost',
-        'dbname' => 'simples',
+        'host' => 'db-mysql',
+        'dbname' => 'curso_poo',
         'user' => 'root',
         'password' => 'secret'
     )

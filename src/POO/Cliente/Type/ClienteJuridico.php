@@ -3,19 +3,26 @@
 
 namespace POO\Cliente\Type;
 
+use POO\Cliente\EntidadeInterface;
 use POO\Cliente\Cliente;
 use POO\Cliente\ClienteJuridicoInterface;
-
+use POO\db\ConexaoDB;
 /**
  * Created by PhpStorm.
  * User: felipe
  * Date: 03/04/2017
  * Time: 14:18
  */
-class ClienteJuridico extends Cliente implements ClienteJuridicoInterface
+class ClienteJuridico extends Cliente implements ClienteJuridicoInterface, EntidadeInterface
 {
     private $cnpj;
     private $tipo = 'Pessoa Juridica';
+    private static $db;
+    private $table = "cliente";
+
+    public function __construct (\PDO $conn) {
+        $this->db = $conn;
+    }
 
     /**
      * @return mixed
@@ -55,6 +62,22 @@ class ClienteJuridico extends Cliente implements ClienteJuridicoInterface
         $this->endereco = "Avenida School of Net, 156";
     }
 
+    /**
+     * @param string $table
+     */
+    public function setTable($table)
+    {
+        $this->table = $table;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTable()
+    {
+        return $this->table;
+    }
 
 
 }
